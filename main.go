@@ -13,6 +13,7 @@ import (
 const (
 	filePath  = "/tmp/data"
 	batchSize = 500 * 1024 * 1024
+	pageSize  = 4 * 1024
 	fileSize  = 5 * 1024 * 1024 * 1024
 )
 
@@ -92,11 +93,13 @@ func Mmap() *ReaderAt {
 	return readAt
 }
 
-func ReadOnce(r *ReaderAt) {
-	var dummy float64
-	for i := 0; i < r.Len(); i++ {
-		dummy += float64(r.At(i))
+func ReadOnce(r *ReaderAt) []byte {
+	var dummy = make([]byte, 1024)
+	//fmt.Printf("read total %d bytes\n", r.Len())
+	for i := 0; i < r.Len(); i += pageSize {
+		dummy[i%1024] = r.At(i)
 	}
+	return dummy
 }
 
 func RemoveFile() {
@@ -121,26 +124,27 @@ func main() {
 	PrintMeminfo("")
 	time.Sleep(1 * time.Second)
 
-	r := Mmap()
-	PrintMeminfo("mmaped")
-	time.Sleep(1 * time.Second)
+	//r := Mmap()
+	//PrintMeminfo("mmaped")
+	//time.Sleep(1 * time.Second)
+	//
+	//for i := 0; i < 2; i++ {
+	//	ReadOnce(r)
+	//	PrintMeminfo("read mmap file")
+	//	time.Sleep(1 * time.Second)
+	//}
+	//
+	//r.Munmap()
+	//PrintMeminfo("munmap")
+	//time.Sleep(1 * time.Second)
 
-	ReadOnce(r)
-	ReadOnce(r)
-	PrintMeminfo("read mmap file")
-	time.Sleep(1 * time.Second)
-
-	r.Munmap()
-	PrintMeminfo("munmap")
-	time.Sleep(1 * time.Second)
-
-	Malloc(4 * 1024 * 1024 * 1024)
-	PrintMeminfo("")
-	time.Sleep(1 * time.Second)
-
-	Malloc(3584 * 1024 * 1024) // 3.5GB
-	PrintMeminfo("")
-	time.Sleep(1 * time.Second)
+	//Malloc(4 * 1024 * 1024 * 1024)
+	//PrintMeminfo("")
+	//time.Sleep(1 * time.Second)
+	//
+	//Malloc(3891 * 1024 * 1024) // 3.8GB
+	//PrintMeminfo("")
+	//time.Sleep(1 * time.Second)
 
 	//RemoveFile()
 }
