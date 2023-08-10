@@ -45,18 +45,17 @@ func PrintMeminfo(msg string) {
 	}
 	// ref: <https://github.com/docker/cli/blob/e57b5f78de635e6e2b688686d10b830c4747c4dc/cli/command/container/stats_helpers.go#L239>
 	usage := stats.Memory.Usage.Usage
-	if stats.Memory.TotalInactiveFile < usage {
-		usage = usage - stats.Memory.TotalInactiveFile - stats.Memory.TotalActiveFile
-	}
+	usage2 := usage - stats.Memory.TotalInactiveFile - stats.Memory.TotalActiveFile
 	fmt.Printf(">>>>>>>>>>>>>>>> %s\n", msg)
 	fmt.Printf("total:%.2fMB\n", float64(stats.Memory.Usage.Limit)/1024/1024)
 	fmt.Printf("used:%.2fMB\n", float64(usage)/1024/1024)
 	fmt.Printf("inactive(file):%.2fMB\n", float64(stats.Memory.TotalInactiveFile)/1024/1024)
 	fmt.Printf("active(file):%.2fMB\n", float64(stats.Memory.TotalActiveFile)/1024/1024)
+	fmt.Printf("used-active-inactive:%.2fMB\n", float64(usage2)/1024/1024)
 	//fmt.Printf("inactive(anon):%.2fMB\n", float64(stats.Memory.TotalInactiveAnon)/1024/1024)
 	//fmt.Printf("active(anon):%.2fMB\n", float64(stats.Memory.TotalActiveAnon)/1024/1024)
 	//fmt.Printf("cached:%.2fMB\n", float64(stats.Memory.TotalCache)/1024/1024)
-	fmt.Printf("mapped:%.2fMB\n", float64(stats.Memory.TotalMappedFile)/1024/1024)
+	//fmt.Printf("mapped:%.2fMB\n", float64(stats.Memory.TotalMappedFile)/1024/1024)
 	fmt.Println("")
 }
 
