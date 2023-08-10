@@ -24,23 +24,23 @@ import (
 // is no guarantee that finalizers will run before a program exits", so we
 // cannot automatically test that the finalizer runs. Instead, set this to true
 // when running the manual test.
-const Debug = true
+const Debug = false
 
 // ReaderAt reads a memory-mapped file.
 //
 // Like any io.ReaderAt, clients can execute parallel ReadAt calls, but it is
-// not safe to call Close and reading methods concurrently.
+// not safe to call Munmap and reading methods concurrently.
 type ReaderAt struct {
 	data []byte
 }
 
-// Close closes the reader.
-func (r *ReaderAt) Close() error {
+// Munmap closes the reader.
+func (r *ReaderAt) Munmap() {
 	if r.data == nil {
-		return nil
+		panic("data is nil")
 	} else if len(r.data) == 0 {
 		r.data = nil
-		return nil
+		panic("data is empty")
 	}
 	data := r.data
 	r.data = nil
@@ -52,7 +52,10 @@ func (r *ReaderAt) Close() error {
 		println("munmap", r, p)
 	}
 	runtime.SetFinalizer(r, nil)
-	return syscall.Munmap(data)
+	err := syscall.Munmap(data)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Len returns the length of the underlying memory-mapped file.
@@ -128,6 +131,6 @@ func Open(filename string) (*ReaderAt, error) {
 		}
 		println("mmap", r, p)
 	}
-	runtime.SetFinalizer(r, (*ReaderAt).Close)
+	runtime.SetFinalizer(r, (*ReaderAt).Munmap)
 	return r, nil
 }
